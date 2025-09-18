@@ -45,7 +45,7 @@
 /* Carousel mobile fixes */
 @media (max-width: 768px) {
   .carousel-item img {
-    height: 10vh !important;
+    height: 100vh !important;
   }
   
   .carousel-caption {
