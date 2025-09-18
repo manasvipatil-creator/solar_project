@@ -45,7 +45,7 @@
 /* Carousel mobile fixes */
 @media (max-width: 768px) {
   .carousel-item img {
-    height: 100vh !important;
+   
   }
   
   .carousel-caption {
@@ -85,4 +85,70 @@ marquee {
   width: 100%;
   max-width: 100vw;
   overflow: hidden;
+}
+
+/* Testimonial responsive styles */
+@media (max-width: 768px) {
+  .testimonial-section .mx-auto {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .testimonial-item {
+    padding: 1.25rem !important; /* p-4 */
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+  }
+
+  .testimonial-avatar {
+    width: 90px !important;
+    height: 90px !important;
+  }
+
+  .quote-badge {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .carousel-nav {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .testimonial-section h1 {
+    font-size: 1.6rem;
+  }
+
+  .testimonial-section h6 {
+    font-size: 0.95rem;
+  }
+
+  .testimonial-item p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .testimonial-avatar {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  .carousel-nav {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .quote-badge {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .testimonial-section h1 {
+    font-size: 1.4rem;
+  }
+
+  .testimonial-item p {
+    font-size: 0.9rem;
+  }
 }

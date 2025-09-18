@@ -52,7 +52,7 @@ const Testimonial = () => {
   ];
 
   return (
-    <div style={{ background: "#000", color: "#fff" }}>
+    <div className="testimonial-section" style={{ background: "#000", color: "#fff" }}>
       <Container className="py-5">
         {/* Section Header */}
         <motion.div
@@ -73,7 +73,7 @@ const Testimonial = () => {
           interval={3000}
           nextIcon={
             <span
-              className="btn btn-danger rounded-circle shadow d-flex align-items-center justify-content-center"
+              className="btn btn-danger carousel-nav rounded-circle shadow d-flex align-items-center justify-content-center"
               style={{ width: "50px", height: "50px" }}
             >
               <i className="fa fa-chevron-right text-white"></i>
@@ -81,7 +81,7 @@ const Testimonial = () => {
           }
           prevIcon={
             <span
-              className="btn btn-danger rounded-circle shadow d-flex align-items-center justify-content-center"
+              className="btn btn-danger carousel-nav rounded-circle shadow d-flex align-items-center justify-content-center"
               style={{ width: "50px", height: "50px" }}
             >
               <i className="fa fa-chevron-left text-white"></i>
@@ -92,7 +92,7 @@ const Testimonial = () => {
           {testimonials.map((testimonial) => (
             <Carousel.Item key={testimonial.id}>
               <motion.div
-                className="testimonial-item text-center p-5 rounded shadow-lg"
+                className="testimonial-item text-center p-4 p-md-5 rounded shadow-lg"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -102,7 +102,7 @@ const Testimonial = () => {
                 {/* Image */}
                 <div className="position-relative mb-4">
                   <img
-                    className="img-fluid rounded-circle shadow-lg"
+                    className="img-fluid rounded-circle shadow-lg testimonial-avatar"
                     src={testimonial.image}
                     alt="Testimonial"
                     style={{
@@ -113,7 +113,7 @@ const Testimonial = () => {
                     }}
                   />
                   <div
-                    className="bg-danger rounded-circle position-absolute top-0 start-100 translate-middle shadow d-flex align-items-center justify-content-center"
+                    className="bg-danger rounded-circle position-absolute top-0 start-100 translate-middle shadow d-flex align-items-center justify-content-center quote-badge"
                     style={{ width: "40px", height: "40px" }}
                   >
                     <i className="fa fa-quote-left text-white"></i>
