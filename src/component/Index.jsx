@@ -16,7 +16,7 @@ import Testimonial from "./Testimonial";
 const Index = () => {
   return (
     <main>
-      <marquee behavior="scroll" direction="left" scrollamount="8" style={{ color: "#111", backgroundColor: "#dc3545", padding: "10px", fontSize: "18px", fontWeight: "bold" }}>
+      <marquee behavior="scroll" direction="left" scrollamount="8" style={{ color: "#111", backgroundColor: "#dc3545", padding: "10px", fontSize: "18px", fontWeight: "bold", width: "100%", maxWidth: "100vw", overflow: "hidden" }}>
         ⚡🌞 Join the Solar Revolution! Shine Bright, Save Energy, Go Green! 🌿🔋✨ Power Your Home with COFFO Solar – Reduce Bills, Protect Nature, and Harness Unlimited Sunshine! ☀️💰🌱💡
       </marquee>
 

@@ -87,7 +87,7 @@ const Project = () => {
             ].map((f) => (
               <li
                 key={f.key}
-                className={`list-inline-item px-3 py-2 mx-1 rounded-pill ${
+                className={`list-inline-item px-3 py-2 mx-1 mt-2 rounded-pill ${
                   filter === f.key ? "bg-danger text-white fw-bold" : "bg-dark text-light"
                 }`}
                 style={{ cursor: "pointer", transition: "0.3s" }}

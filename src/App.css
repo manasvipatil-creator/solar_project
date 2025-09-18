@@ -1,0 +1,88 @@
+/* Mobile-first responsive fixes */
+.App {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Ensure all containers don't exceed viewport width */
+.container-fluid {
+  padding-left: 15px;
+  padding-right: 15px;
+  max-width: 100%;
+}
+
+/* Fix for Bootstrap rows that might cause overflow */
+.row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.col, .col-* {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Mobile navbar fixes */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background-color: rgba(0, 0, 0, 0.95);
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 15px;
+  }
+  
+  .navbar-nav {
+    width: 100%;
+  }
+  
+  .nav-link {
+    padding: 8px 16px !important;
+    margin: 2px 0;
+  }
+}
+
+/* Carousel mobile fixes */
+@media (max-width: 768px) {
+  .carousel-item img {
+    height: 10vh !important;
+  }
+  
+  .carousel-caption {
+    left: 5% !important;
+    right: 5% !important;
+    max-width: 90% !important;
+  }
+  
+  .carousel-caption h1 {
+    font-size: 1.8rem !important;
+  }
+  
+  .carousel-caption p {
+    font-size: 1rem !important;
+  }
+}
+
+/* Footer mobile fixes */
+@media (max-width: 768px) {
+  .footer .col {
+    margin-bottom: 2rem;
+  }
+}
+
+/* Prevent horizontal scroll on all elements */
+* {
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Marquee mobile fix */
+marquee {
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+}
