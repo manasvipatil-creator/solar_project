@@ -1,14 +1,27 @@
 // src/components/Services.jsx
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { db } from "../firebase";
+import { ref, onValue, off } from "firebase/database";
 
 const Services = () => {
   const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState([]);
 
   // Loader timeout
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const listRef = ref(db, "content/services");
+    const callback = (snapshot) => {
+      const data = snapshot.val();
+      const list = [];
+      if (data) {
+        Object.keys(data).forEach((key) => list.push({ key, ...data[key] }));
+      }
+      setServices(list);
+      setLoading(false);
+    };
+    onValue(listRef, callback);
+    return () => off(listRef, "value", callback);
   }, []);
 
   // Show loader
@@ -27,69 +40,13 @@ const Services = () => {
     );
   }
 
-  // Services data
-  const services = [
-    {
-      id: 1,
-      image: "img/img-600x400-1.jpg",
-      icon: "fa fa-solar-panel",
-      title: "Solar Panels",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "0s",
-    },
-    {
-      id: 2,
-      image: "img/img-600x400-2.jpg",
-      icon: "fa fa-wind",
-      title: "Wind Turbines",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "0.2s",
-    },
-    {
-      id: 3,
-      image: "img/img-600x400-3.jpg",
-      icon: "fa fa-lightbulb",
-      title: "Hydropower Plants",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "0.4s",
-    },
-    {
-      id: 4,
-      image: "img/img-600x400-4.jpg",
-      icon: "fa fa-solar-panel",
-      title: "Solar Panels",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "0.6s",
-    },
-    {
-      id: 5,
-      image: "img/img-600x400-5.jpg",
-      icon: "fa fa-wind",
-      title: "Wind Turbines",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "0.8s",
-    },
-    {
-      id: 6,
-      image: "img/img-600x400-6.jpg",
-      icon: "fa fa-lightbulb",
-      title: "Hydropower Plants",
-      description:
-        "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
-      delay: "1s",
-    },
-  ];
+  // If no services in DB, show nothing (or we could add a fallback list)
 
   return (
     <div style={{ backgroundColor: "#000", minHeight: "100vh" }}>
-      <Container className="py-5">
+      <Container className="py-2">
         {/* Section Title */}
-        <div className="text-center mx-auto mb-5" style={{ maxWidth: "600px" }}>
+        <div className="text-center mx-auto mb-2" style={{ maxWidth: "600px" }}>
           <h6 className="text-danger">Our Services</h6>
           <h1 className="mb-4 text-white">
             We Are Pioneers In The World Of Renewable Energy
@@ -117,16 +74,16 @@ const Services = () => {
 
         {/* Services Grid */}
         <Row className="g-4">
-          {services.map((service) => (
+          {services.map((service, idx) => (
             <Col
-              key={service.id}
+              key={service.key || idx}
               md={6}
               lg={4}
               style={{
                 opacity: 0,
                 transform: "translateY(40px)",
                 animation: `moveUp 0.8s ease-out forwards`,
-                animationDelay: service.delay,
+                animationDelay: `${(idx % 4) * 0.2}s`,
               }}
             >
               <div className="service-item rounded overflow-hidden shadow-sm h-100" style={{ 
@@ -138,18 +95,18 @@ const Services = () => {
                 <div className="img-container">
                   <img
                     className="img-fluid w-100"
-                    src={service.image}
-                    alt={service.title}
+                    src={service.image || "img/img-600x400-1.jpg"}
+                    alt={service.title || "Service"}
                   />
                 </div>
 
                 {/* Service Content */}
                 <div className="p-4">
                   <div className="service-icon mb-3 text-danger">
-                    <i className={`${service.icon} fa-3x`}></i>
+                    <i className={`${service.icon || 'fa fa-solar-panel'} fa-3x`}></i>
                   </div>
-                  <h4 className="mb-3 text-white">{service.title}</h4>
-                  <p className="text-light">{service.description}</p>
+                  <h4 className="mb-3 text-white">{service.title || 'Service'}</h4>
+                  <p className="text-light">{service.description || ''}</p>
                   <a
                     className="small fw-medium text-decoration-none text-danger"
                     href="#"

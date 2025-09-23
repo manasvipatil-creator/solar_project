@@ -1,9 +1,12 @@
 // src/component/HomeCarousel.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Carousel, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
+import { db } from "../firebase";
+import { ref, onValue, off } from "firebase/database";
 
-const slides = [
+// Fallback default slides (also exported for thumbnails)
+const defaultSlides = [
   {
     img: "https://w0.peakpx.com/wallpaper/667/704/HD-wallpaper-black-solar-panel-under-red-and-gray-clouds.jpg",
     height: "80vh",
@@ -19,12 +22,11 @@ const slides = [
     heading: "Your Sun. Your Power. Your Savings.",
     text: "We bring sustainable energy solutions right to your home.",
     btn: "Get Started",
- 
   },
   {
     img: "https://img.freepik.com/free-photo/sunset-nature-provides-renewable-energy-through-solar-power-generated-by-ai_188544-26135.jpg",
     backgroundsize: "cover",
-     height: "80vh",
+    height: "80vh",
     heading: "Bright Energy for a Greener Tomorrow",
     text: "Harness the sun’s power and reduce your carbon footprint today.",
     btn: "Learn More",
@@ -32,6 +34,33 @@ const slides = [
 ];
 
 const HomeCarousel = ({ index, setIndex }) => {
+  const [entries, setEntries] = useState([]);
+
+  useEffect(() => {
+    const listRef = ref(db, "content/homeEntries");
+    const callback = (snapshot) => {
+      const data = snapshot.val();
+      const list = [];
+      if (data) {
+        Object.keys(data).forEach((key) => list.push({ key, ...data[key] }));
+      }
+      setEntries(list);
+    };
+    onValue(listRef, callback);
+    return () => off(listRef, "value", callback);
+  }, []);
+
+  const dynamicSlides = entries.map((e) => ({
+    img: e.image,
+    height: "80vh",
+    backgroundsize: "cover",
+    heading: e.title,
+    text: e.description,
+    btn: e.buttonType || "Learn More",
+  }));
+
+  const slides = dynamicSlides.length > 0 ? dynamicSlides : defaultSlides;
+
   return (
     <Carousel
       activeIndex={index}
@@ -105,5 +134,5 @@ const HomeCarousel = ({ index, setIndex }) => {
   );
 };
 
-export { slides }; // ✅ Export slides for thumbnails
+export { defaultSlides as slides }; // keep static export for thumbnails fallback
 export default HomeCarousel;

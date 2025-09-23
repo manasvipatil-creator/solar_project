@@ -1,7 +1,46 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
+import { db } from "../firebase";
+import { ref, onValue } from "firebase/database";
 
 const Footer = () => {
+  const [contactInfo, setContactInfo] = useState([]); // { key, type, value, icon }
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const listRef = ref(db, "content/contactInfo");
+    const unsub = onValue(
+      listRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        const list = [];
+        if (data) {
+          Object.keys(data).forEach((key) => list.push({ key, ...data[key] }));
+        }
+        setContactInfo(list);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Footer: failed to load contact info", err);
+        setLoading(false);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  const contactByType = useMemo(() => {
+    const pickFirst = (type) => contactInfo.find((c) => (c.type || "").toLowerCase().includes(type));
+    return {
+      phone: pickFirst("call")?.value,
+      email: pickFirst("email")?.value,
+      address: pickFirst("visit")?.value || pickFirst("address")?.value,
+    };
+  }, [contactInfo]);
+
+  const phoneText = contactByType.phone || "Call +01 1234567890";
+  const emailText = contactByType.email || "demo@gmail.com";
+  const addressText = contactByType.address || "Location";
+
   return (
     <footer className="position-relative text-center bg-white">
       {/* ✅ Curved Background */}
@@ -43,15 +82,15 @@ const Footer = () => {
         <Row className="text-muted mb-4 gy-3">
           <Col xs={12} md={4} className="d-flex align-items-center justify-content-center">
             <i className="fa fa-map-marker-alt me-2 text-danger"></i>
-            Location
+            {addressText}
           </Col>
           <Col xs={12} md={4} className="d-flex align-items-center justify-content-center">
             <i className="fa fa-envelope me-2 text-danger"></i>
-            demo@gmail.com
+            {emailText}
           </Col>
           <Col xs={12} md={4} className="d-flex align-items-center justify-content-center">
             <i className="fa fa-phone-alt me-2 text-danger"></i>
-            Call +01 1234567890
+            {phoneText}
           </Col>
         </Row>
 

@@ -2,16 +2,36 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { motion } from "framer-motion";
+import { db } from "../firebase";
+import { ref, onValue } from "firebase/database";
 
 const Project = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("*");
+  const [projects, setProjects] = useState([]); // { key, name, category, description, image }
+  const [categories, setCategories] = useState([]);
   const [visibleIds, setVisibleIds] = useState([]);
   const itemsRef = useRef({});
 
+  // Subscribe to projects from Firebase
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const listRef = ref(db, "content/projects");
+    const unsub = onValue(listRef, (snapshot) => {
+      const data = snapshot.val();
+      const list = [];
+      const cats = new Set();
+      if (data) {
+        Object.keys(data).forEach((key) => {
+          const item = { key, ...data[key] };
+          list.push(item);
+          if (item.category) cats.add(item.category);
+        });
+      }
+      setProjects(list);
+      setCategories(["*", ...Array.from(cats)]);
+      setLoading(false);
+    });
+    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -31,18 +51,9 @@ const Project = () => {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [loading, filter]);
+  }, [loading, filter, projects]);
 
-  const projects = [
-    { id: 1, image: "img/img-600x400-6.jpg", category: "first", type: "Solar Panels", title: "We Are pioneers of solar & renewable energy industry" },
-    { id: 2, image: "img/img-600x400-5.jpg", category: "second", type: "Wind Turbines", title: "We Are pioneers of solar & renewable energy industry" },
-    { id: 3, image: "img/img-600x400-4.jpg", category: "third", type: "Hydropower Plants", title: "We Are pioneers of solar & renewable energy industry" },
-    { id: 4, image: "img/img-600x400-3.jpg", category: "first", type: "Solar Panels", title: "We Are pioneers of solar & renewable energy industry" },
-    { id: 5, image: "img/img-600x400-2.jpg", category: "second", type: "Wind Turbines", title: "We Are pioneers of solar & renewable energy industry" },
-    { id: 6, image: "img/img-600x400-1.jpg", category: "third", type: "Hydropower Plants", title: "We Are pioneers of solar & renewable energy industry" },
-  ];
-
-  const filteredProjects = filter === "*" ? projects : projects.filter((p) => p.category === filter);
+  const filteredProjects = filter === "*" ? projects : projects.filter((p) => (p.category || "").toLowerCase() === filter.toLowerCase());
 
   if (loading) {
     return (
@@ -79,21 +90,16 @@ const Project = () => {
         {/* Filters */}
         <div className="text-center mb-4">
           <ul className="list-inline">
-            {[
-              { key: "*", label: "All" },
-              { key: "first", label: "Solar Panels" },
-              { key: "second", label: "Wind Turbines" },
-              { key: "third", label: "Hydropower Plants" },
-            ].map((f) => (
+            {categories.map((cat) => (
               <li
-                key={f.key}
+                key={cat}
                 className={`list-inline-item px-3 py-2 mx-1 mt-2 rounded-pill ${
-                  filter === f.key ? "bg-danger text-white fw-bold" : "bg-dark text-light"
+                  filter === cat ? "bg-danger text-white fw-bold" : "bg-dark text-light"
                 }`}
                 style={{ cursor: "pointer", transition: "0.3s" }}
-                onClick={() => setFilter(f.key)}
+                onClick={() => setFilter(cat)}
               >
-                {f.label}
+                {cat === "*" ? "All" : cat}
               </li>
             ))}
           </ul>
@@ -101,12 +107,14 @@ const Project = () => {
 
         {/* Projects Grid */}
         <Row className="g-4">
-          {filteredProjects.map((project, idx) => (
-            <Col key={project.id} lg={4} md={6} data-id={project.id} ref={(el) => (itemsRef.current[project.id] = el)}>
+          {filteredProjects.map((project, idx) => {
+            const id = project.key || project.id || idx;
+            return (
+            <Col key={id} lg={4} md={6} data-id={id} ref={(el) => (itemsRef.current[id] = el)}>
               <motion.div
                 variants={animations[idx % animations.length]} // pick different animation
                 initial="hidden"
-                animate={visibleIds.includes(project.id.toString()) ? "visible" : "hidden"}
+                animate={visibleIds.includes(String(id)) ? "visible" : "hidden"}
                 transition={{ duration: 0.8, delay: idx * 0.1 }}
                 className="rounded shadow-lg h-100"
                 style={{ backgroundColor: "#111", overflow: "hidden" }}
@@ -114,9 +122,9 @@ const Project = () => {
                 <div className="position-relative overflow-hidden">
                   <img
                     src={project.image}
-                    alt={project.type}
+                    alt={project.name || project.category || "Project"}
                     className="img-fluid w-100"
-                    style={{ transition: "transform 0.6s ease" }}
+                    style={{ transition: "transform 0.6s ease", height: "240px", objectFit: "cover" }}
                   />
                   <div
                     className="d-flex justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100"
@@ -135,13 +143,19 @@ const Project = () => {
                   </div>
                 </div>
                 <div className="p-3 text-center">
-                  <p className="text-danger mb-1">{project.type}</p>
+                  <p className="text-danger mb-1">{project.category}</p>
                   <hr className="text-danger w-25 mx-auto" />
-                  <h5>{project.title}</h5>
+                  <h5>{project.name || project.title}</h5>
+                  {project.description && (
+                    <p className="mt-2 mb-0" style={{ minHeight: "1.5em", color: "rgba(255,255,255,0.92)" }}>
+                      {project.description}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             </Col>
-          ))}
+          );
+          })}
         </Row>
       </Container>
 

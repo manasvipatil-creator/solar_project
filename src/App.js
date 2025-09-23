@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Form, Container, Row, Col, Button } from "react-bootstrap";
 
@@ -16,7 +16,14 @@ import Testimonial from "./component/Testimonial";
 import HomeCarousel, { slides } from "./component/HomeCarousel";
 import FloatingThumbnails from "./component/FloatingThumbnails";
 import AuthForm from "./component/AuthForm";
-import AdminDashboard from "./component/AdminDashboard";
+
+import Layout from "./AdminDashboard/Layout";
+import Dashboard from "./AdminDashboard/Dashboard";
+import Home from "./AdminDashboard/Home";
+import ServicesAdmin from "./AdminDashboard/Services";
+import ProjectAdmin from "./AdminDashboard/Project";
+import TeamAdmin from "./AdminDashboard/Team";
+import ContactAdmin from "./AdminDashboard/Contact";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -226,29 +233,55 @@ const HomePageContent = ({ index, setIndex }) => {
 // ✅ Main App
 function App() {
   const [index, setIndex] = useState(0);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Simple admin route guard using localStorage
+  const RequireAdmin = ({ children }) => {
+    const location = useLocation();
+    const isAdmin = typeof window !== 'undefined' && localStorage.getItem("isAdmin") === "true";
+    if (!isAdmin) {
+      return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    }
+    return children;
+  };
 
   return (
     <div className="App">
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
 
       <Routes>
-        <Route
-          path="/"
-          element={<HomePageContent index={index} setIndex={setIndex} />}
-        />
-        <Route path="/about" element={<About />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/project" element={<Project />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/quote" element={<Quote />} />
-        <Route path="/team" element={<Team />} />
-        <Route path="/testimonial" element={<Testimonial />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<AuthForm />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
-      </Routes>
+  <Route
+    path="/"
+    element={<HomePageContent index={index} setIndex={setIndex} />}
+  />
+  <Route path="/about" element={<About />} />
+  <Route path="/services" element={<Services />} />
+  <Route path="/project" element={<Project />} />
+  <Route path="/features" element={<Features />} />
+  <Route path="/quote" element={<Quote />} />
+  <Route path="/team" element={<Team />} />
+  <Route path="/testimonial" element={<Testimonial />} />
+  <Route path="/contact" element={<Contact />} />
+  <Route path="/login" element={<AuthForm />} />
 
-      <Footer />
+  {/* Admin routes */}
+  <Route path="/admin" element={<RequireAdmin><Layout /></RequireAdmin>}>
+    <Route index element={<Navigate to="dashboard" replace />} />
+    <Route path="dashboard" element={<Dashboard />} />
+    <Route path="home" element={<Home />} />
+    <Route path="services" element={<ServicesAdmin />} />
+    <Route path="project" element={<ProjectAdmin />} />
+    <Route path="team" element={<TeamAdmin />} />
+    <Route path="contact" element={<ContactAdmin />} />
+    <Route path="*" element={<h2>404 - Page Not Found</h2>} />
+  </Route> {/* <-- Close the /admin Route here */}
+
+</Routes> {/* <-- Close the main Routes here */}
+
+
+
+      {!isAdminRoute && <Footer />}
     </div>
   );
 }

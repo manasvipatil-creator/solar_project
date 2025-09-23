@@ -1,9 +1,15 @@
 // src/components/Quote.jsx
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Form } from "react-bootstrap";
+import { Row, Col, Button, Form, Alert } from "react-bootstrap";
+import { ref, set, get, update } from "firebase/database";
+import { db } from "../firebase";
 
 const Quote = () => {
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertVariant, setAlertVariant] = useState("success");
   const [quoteForm, setQuoteForm] = useState({
     name: "",
     email: "",
@@ -24,18 +30,82 @@ const Quote = () => {
     setQuoteForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Function to create a valid Firebase key from a name
+  const createValidKey = (name) => {
+    return name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')  // Replace special characters with underscores
+      .substring(0, 100); // Limit length for Firebase keys
+  };
+
+  // Check if a quote already exists for this name
+  const checkExistingQuote = async (nameKey) => {
+    try {
+      const quoteRef = ref(db, `quotes/${nameKey}`);
+      const snapshot = await get(quoteRef);
+      return snapshot.exists();
+    } catch (error) {
+      console.error("Error checking existing quote: ", error);
+      return false;
+    }
+  };
+
   // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Quote form submitted:", quoteForm);
-    alert("✅ Thank you for your request! We will contact you soon.");
-    setQuoteForm({
-      name: "",
-      email: "",
-      mobile: "",
-      service: "",
-      note: "",
-    });
+    setSubmitting(true);
+    
+    try {
+      // Create a valid key from the name
+      const nameKey = createValidKey(quoteForm.name);
+      
+      // Check if a quote already exists for this name
+      const quoteExists = await checkExistingQuote(nameKey);
+      
+      if (quoteExists) {
+        // Update existing quote
+        const quoteRef = ref(db, `quotes/${nameKey}`);
+        await update(quoteRef, {
+          ...quoteForm,
+          timestamp: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        setAlertMessage("✅ Your quote request has been updated! We will contact you soon.");
+      } else {
+        // Create new quote with name as key
+        const quoteRef = ref(db, `quotes/${nameKey}`);
+        await set(quoteRef, {
+          ...quoteForm,
+          timestamp: new Date().toISOString(),
+        });
+        
+        setAlertMessage("✅ Thank you for your request! We will contact you soon.");
+      }
+      
+      setAlertVariant("success");
+      setShowAlert(true);
+      
+      // Reset form
+      setQuoteForm({
+        name: "",
+        email: "",
+        mobile: "",
+        service: "",
+        note: "",
+      });
+      
+      // Hide alert after 5 seconds
+      setTimeout(() => setShowAlert(false), 5000);
+    } catch (error) {
+      console.error("Error saving quote: ", error);
+      setAlertMessage("❌ There was an error submitting your request. Please try again.");
+      setAlertVariant("danger");
+      setShowAlert(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Loader
@@ -102,6 +172,13 @@ const Quote = () => {
                   will reach out to design a plan tailored for you.
                 </p>
 
+                {/* Alert Message */}
+                {showAlert && (
+                  <Alert variant={alertVariant} className="mb-4">
+                    {alertMessage}
+                  </Alert>
+                )}
+
                 {/* Form */}
                 <Form onSubmit={handleSubmit}>
                   <Row className="g-3">
@@ -115,6 +192,7 @@ const Quote = () => {
                         value={quoteForm.name}
                         onChange={handleInputChange}
                         required
+                        disabled={submitting}
                       />
                     </Col>
                     <Col xs={12} sm={6}>
@@ -127,6 +205,7 @@ const Quote = () => {
                         value={quoteForm.email}
                         onChange={handleInputChange}
                         required
+                        disabled={submitting}
                       />
                     </Col>
                     <Col xs={12} sm={6}>
@@ -139,6 +218,7 @@ const Quote = () => {
                         value={quoteForm.mobile}
                         onChange={handleInputChange}
                         required
+                        disabled={submitting}
                       />
                     </Col>
                     <Col xs={12} sm={6}>
@@ -149,6 +229,7 @@ const Quote = () => {
                         value={quoteForm.service}
                         onChange={handleInputChange}
                         required
+                        disabled={submitting}
                       >
                         <option value="">Select A Service</option>
                         <option value="solar-panels">Solar Panels</option>
@@ -165,6 +246,7 @@ const Quote = () => {
                         style={{ minHeight: "100px" }}
                         value={quoteForm.note}
                         onChange={handleInputChange}
+                        disabled={submitting}
                       />
                     </Col>
                     <Col xs={12}>
@@ -182,8 +264,14 @@ const Quote = () => {
                         onMouseLeave={(e) =>
                           (e.currentTarget.style.background = "#dc3545")
                         }
+                        disabled={submitting}
                       >
-                        Submit
+                        {submitting ? "Submitting..." : "Submit"}
+                        {submitting && (
+                          <div className="spinner-border spinner-border-sm ms-2" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        )}
                       </Button>
                     </Col>
                   </Row>

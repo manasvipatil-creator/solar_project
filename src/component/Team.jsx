@@ -3,14 +3,26 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { db } from "../firebase";
+import { ref, onValue } from "firebase/database";
 
 const Team = () => {
   const [loading, setLoading] = useState(true);
 
-  // Simulate loading
+  // Subscribe to team data from Firebase
+  const [teamMembers, setTeamMembers] = useState([]); // { key, name, designation, image, bio }
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const listRef = ref(db, "content/team");
+    const unsub = onValue(listRef, (snapshot) => {
+      const data = snapshot.val();
+      const list = [];
+      if (data) {
+        Object.keys(data).forEach((key) => list.push({ key, ...data[key] }));
+      }
+      setTeamMembers(list);
+      setLoading(false);
+    });
+    return () => unsub();
   }, []);
 
   // Loader state
@@ -28,15 +40,7 @@ const Team = () => {
     );
   }
 
-  // Team members data
-  const teamMembers = [
-    { id: 1, image: "img/team-1.jpg", name: "John Doe", designation: "CEO", delay: 0.1 },
-    { id: 2, image: "img/team-2.jpg", name: "Sarah Smith", designation: "Manager", delay: 0.3 },
-    { id: 3, image: "img/team-3.jpg", name: "David Johnson", designation: "Engineer", delay: 0.5 },
-    { id: 4, image: "img/team-2.jpg", name: "Emily Brown", designation: "Designer", delay: 0.1 },
-    { id: 5, image: "img/team-3.jpg", name: "Michael Lee", designation: "Developer", delay: 0.3 },
-    { id: 6, image: "img/team-1.jpg", name: "Sophia Wilson", designation: "Consultant", delay: 0.5 },
-  ];
+  const animationDelays = [0.1, 0.25, 0.4, 0.1, 0.25, 0.4];
 
   return (
     <Container className="pt-3 pb-5">
@@ -55,13 +59,16 @@ const Team = () => {
 
       {/* Team Grid */}
       <Row className="g-4">
-        {teamMembers.map((member) => (
-          <Col key={member.id} lg={4} md={6}>
+        {teamMembers.length === 0 && (
+          <div className="text-center text-muted py-5">No team members added yet.</div>
+        )}
+        {teamMembers.map((member, idx) => (
+          <Col key={member.key || member.id || idx} lg={4} md={6}>
             <motion.div
               className="team-item rounded overflow-hidden shadow-lg"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: member.delay }}
+              transition={{ duration: 0.6, delay: animationDelays[idx % animationDelays.length] }}
               viewport={{ once: true }}
               style={{ background: "#111", color: "white" }}
             >
@@ -71,7 +78,7 @@ const Team = () => {
                   className="img-fluid w-100"
                   src={member.image}
                   alt={member.name}
-                  style={{ filter: "brightness(70%)" }}
+                  style={{ filter: "brightness(70%)", height: "330px", objectFit: "cover" }}
                 />
                 <div className="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-3 mb-3">
                   <a href="https://www.facebook.com/" className="social-btn">
@@ -90,6 +97,9 @@ const Team = () => {
               <div className="p-4 text-center">
                 <h5 className="text-white">{member.name}</h5>
                 <span className="text-danger">{member.designation}</span>
+                {member.bio && (
+                  <p className="mt-2 mb-0" style={{ color: "rgba(255,255,255,0.9)" }}>{member.bio}</p>
+                )}
               </div>
             </motion.div>
           </Col>

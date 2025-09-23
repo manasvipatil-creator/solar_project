@@ -96,7 +96,7 @@ const About = () => {
                 <Button
                   variant="outline-danger"
                   size="lg"
-                  className="rounded-pill px-4 py-3 fw-bold"
+                  className="rounded-pill px-4 py-2 fw-bold"
                 >
                   Contact Us
                 </Button>
@@ -106,8 +106,8 @@ const About = () => {
         </Row>
 
         {/* Stats Section */}
-        <Row className="mt-5 pt-4" data-aos="fade-down" data-aos-delay="600">
-          <Col md={3} className="text-center mb-4">
+        <Row className="mt-2 pt-4" data-aos="fade-down" data-aos-delay="600">
+          <Col md={3} className="text-center mb-2">
             <div className="border-end border-2 pe-md-3" style={{ borderColor: "#dc3545" }}>
               <h2 className="display-4 fw-bold" style={{ color: "#dc3545" }}>25+</h2>
               <p className="fs-5 text-light">Years Experience</p>
